@@ -22,7 +22,7 @@ class Message:
         self.expiration: int = expiration
     
     def __repr__(self,):
-        return f"{self.author} {datetime.fromtimestamp(self.sent_at)}\n{self.content}"
+        return f"{self.author} {datetime.fromtimestamp(self.sent_at)}\n{self.content}\n"
     
     @classmethod
     def deserialise(self, d):
@@ -96,7 +96,22 @@ class Conversations:
                         if conversation_id in conversations:
                             conversations[conversation_id].messages.append(message)
                         else:
-                            name = self.name_to_conversation_id.inverse[conversation_id]
+                            # If we don't have a name mapping for this conversation_id yet,
+                            # create one using the message author and persist it. This
+                            # prevents a KeyError when loading messages written before
+                            # the name mapping existed.
+                            try:
+                                name = self.name_to_conversation_id.inverse[conversation_id]
+                            except KeyError:
+                                # add mapping from author -> conversation_id and save
+                                self.name_to_conversation_id[message.author] = conversation_id
+                                try:
+                                    self._save_name_to_conversation_id()
+                                except Exception:
+                                    # non-fatal: continue without persisting
+                                    pass
+                                name = message.author
+
                             conversations[conversation_id] = Conversation(name = name, id = conversation_id, messages=[message])
                         
                     except (json.JSONDecodeError, KeyError) as e:

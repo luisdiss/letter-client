@@ -43,4 +43,4 @@ view_messages_parser.add_argument('count', type=int)
 get_messages_parser = subparsers.add_parser('get')
 
 send_message_parser = subparsers.add_parser('send')
-send_message_parser.add_argument('content', nargs='+')
+send_message_parser.add_argument('msg_text', nargs='+')
