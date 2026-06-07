@@ -36,5 +36,5 @@ jobs:
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
-          name: client-coverage-${{ matrix.python-version }} # Becomes client-coverage-3.10 and client-coverage-3.11
+          name: client-coverage-${{ matrix.python-version }}
           path: coverage.xmls
