@@ -5,6 +5,7 @@ from parser import parser
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
+from getpass import getpass
 import json
 import requests as rq
 import sys
@@ -50,7 +51,7 @@ class App:
             if choice == "login":
                 while True:
                     username = input("username: ")
-                    password = input("password: ")
+                    password = getpass("password: ")
                     token = self._login_request(username, password)
                     if token:
                         self.state.username = username
@@ -60,7 +61,7 @@ class App:
                     print("try again or press Ctrl+C to quit\n")
             elif choice == "register":
                 username = input("username: ")
-                password = input("password: ")
+                password = getpass("password: ")
                 if self._register_request(username, password):
                     token = self._login_request(username, password)
                     if token:

@@ -91,3 +91,5 @@ class Contacts:
     
     def view_contacts(self) -> None:
         for contact in self.name_to_contact.values(): print(f"  {contact}")
+
+   
