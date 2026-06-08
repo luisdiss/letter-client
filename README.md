@@ -47,6 +47,11 @@ Local files
 - `src/data/<username>/messages.txt` — message history (one JSON object per line)
 - `src/data/<username>/names.txt` — maps usernames to conversation IDs
 
+Known limitations
+-----------------
+- Message history is stored in plain text on disk.
+- The server marks messages as read the moment they are fetched. If the client crashes before saving them to disk, those messages are permanently lost.
+
 Files
 -----
 - `client.py` — entry point

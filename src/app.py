@@ -79,9 +79,7 @@ class App:
             print("login successful\n")
             return resp.json()["auth_token"]
         elif resp.status_code == 401:
-            print("wrong password\n")
-        elif resp.status_code == 403:
-            print(f"no account found for '{username}'\n")
+            print("incorrect username or password\n")
         elif resp.status_code == 400:
             print("invalid username or password\n")
         else:
