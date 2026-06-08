@@ -14,9 +14,7 @@ def make_state():
 
 def test_get_messages_success(tmp_path, mocker):
     state = make_state()
-    conv = Conversations(state)
-    conv.name_path = tmp_path / 'names.txt'
-    conv.messages_path = tmp_path / 'messages.txt'
+    conv = Conversations(state, tmp_path)
 
     fake_resp = SimpleNamespace(status_code=200, json=lambda: [{
         'conversation_id': 1,

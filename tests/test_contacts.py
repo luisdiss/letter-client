@@ -14,9 +14,7 @@ def make_state():
 
 def test_add_contact_success(tmp_path, mocker):
     state = make_state()
-    contacts = Contacts(state)
-    # isolate file operations to tmp_path and start with empty in-memory map
-    contacts.contacts_filename = str(tmp_path / 'contacts.txt')
+    contacts = Contacts(state, tmp_path)
     contacts.name_to_contact = {}
 
     fake_resp = SimpleNamespace(status_code=200)
@@ -33,8 +31,7 @@ def test_add_contact_success(tmp_path, mocker):
 
 def test_add_contact_user_not_exist(tmp_path, mocker, capsys):
     state = make_state()
-    contacts = Contacts(state)
-    contacts.contacts_filename = str(tmp_path / 'contacts.txt')
+    contacts = Contacts(state, tmp_path)
     contacts.name_to_contact = {}
 
     fake_resp = SimpleNamespace(status_code=404)

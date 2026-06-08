@@ -11,7 +11,7 @@ from bidict import bidict
 
 
 def make_state():
-    return SimpleNamespace(auth_token='token', settings={'server_url': 'http://test', 'expiration': 3600})
+    return SimpleNamespace(auth_token='token', username='me', settings={'server_url': 'http://test', 'expiration': 3600})
 
 
 def test_load_conversation_id_to_conversation_parsing(tmp_path, capsys):

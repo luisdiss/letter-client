@@ -31,7 +31,7 @@ def reset_app_singleton():
 @pytest.fixture
 def app():
     state = State({'server_url': 'http://test'})
-    return App(state, DummyContacts(), DummyConversations())
+    return App(state)
 
 
 def test_login_request_success(app, mocker):
