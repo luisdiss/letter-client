@@ -11,7 +11,7 @@ from contacts import Contacts, Contact
 def test_save_contacts_permission_error(tmp_path, mocker, capsys):
     obj = Contacts.__new__(Contacts)
     obj.state = SimpleNamespace()
-    obj.contacts_filename = str(tmp_path / 'contacts.txt')
+    obj.contacts_path = tmp_path / 'contacts.txt'
     obj.name_to_contact = {'a': Contact(name='A', username='a')}
 
     # simulate PermissionError when trying to open for writing

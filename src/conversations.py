@@ -1,13 +1,21 @@
+from __future__ import annotations
 from pathlib import Path
 from datetime import datetime
+from functools import wraps
+from typing import TYPE_CHECKING
+from network import REQUEST_TIMEOUT, handle_network_errors
 import json
 import requests as rq
 import sys
 from bidict import bidict
 
+if TYPE_CHECKING:
+    from app import State
+
 def select_func(func):
+    @wraps(func)
     def wrapper(self, *args, **kwargs):
-        if self.state.selected_username: 
+        if self.state.selected_username:
             func(self, *args, **kwargs)
         else:
             print("no user selected")
@@ -20,22 +28,22 @@ class Message:
         self.sent_at: int = sent_at
         self.content: str = content
         self.expiration: int = expiration
-    
+
     def __repr__(self,):
         return f"{self.author} {datetime.fromtimestamp(self.sent_at)}\n{self.content}\n"
-    
+
     @classmethod
-    def deserialise(self, d):
+    def deserialise(cls, d):
         return Message(**d)
 
 class Conversation:
-    def __init__(self, name: str, id: int, messages: list[Message] = []):
+    def __init__(self, name: str, id: int, messages: list[Message] | None = None):
         self.name = name
         self.id = id
-        self.messages = messages
-    
+        self.messages = messages if messages is not None else []
+
     @classmethod
-    def deserialise(self, d):
+    def deserialise(cls, d):
         if 'name' in d and 'id' in d and 'messages' in d:
             messages = [Message.deserialise(m) for m in d["messages"]]
             d["messages"] = messages
@@ -43,10 +51,10 @@ class Conversation:
         return d
 
 class Conversations:
-    def __init__(self, state):
+    def __init__(self, state: State, data_dir: Path):
         self.state = state
-        self.messages_path: Path = Path("messages.txt")
-        self.name_path = Path("names.txt")
+        self.messages_path: Path = data_dir / "messages.txt"
+        self.name_path: Path = data_dir / "names.txt"
         self.name_to_conversation_id: bidict[str, int] = self._load_name_to_conversation_id()
         self.conversation_id_to_conversation:  dict[int, Conversation] = self._load_conversation_id_to_conversation()
 
@@ -136,11 +144,12 @@ class Conversations:
         messages.sort(key=lambda message: message.sent_at)
         self._append_and_save_messages(messages)
 
+    @handle_network_errors(default=[])
     def _get_messages(self, server_url: str) -> list:
         headers  = {
             "Authorization": f"Token {self.state.auth_token}",
         }
-        resp = rq.get(server_url + "/messages", headers=headers)
+        resp = rq.get(server_url + "/messages", headers=headers, timeout=REQUEST_TIMEOUT)
         
         if resp.status_code == 200:
             return resp.json()
@@ -155,8 +164,8 @@ class Conversations:
             conversation_id = message.conversation_id
 
             if conversation_id not in self.name_to_conversation_id.inverse:
-                #it must be a message. group chat ids would be saved because they require manual joining
                 self._add_conversation_id(message.author, conversation_id)
+                self._save_name_to_conversation_id()
 
             conversation = self.conversation_id_to_conversation.get(conversation_id)
             if not conversation:
@@ -177,6 +186,7 @@ class Conversations:
             return False
     
     @select_func
+    @handle_network_errors()
     def send_message(self, msg_text:list[str]) -> None:
         username = self.state.selected_username
         conversation_id = self.name_to_conversation_id.get(username)
@@ -192,23 +202,21 @@ class Conversations:
             "expiration":expiration
         }
         headers  = {"Authorization": f"Token {self.state.auth_token}"}
-        resp = rq.post(self.state.settings["server_url"] + "/messages", json=data, headers=headers)
+        resp = rq.post(self.state.settings["server_url"] + "/messages", json=data, headers=headers, timeout=REQUEST_TIMEOUT)
 
         if resp.status_code == 200:
-            if conversation_id == None:
-                conversation_id = resp.json()["conversation_id"]
+            conversation_id = resp.json()["conversation_id"]
+            if username not in self.name_to_conversation_id:
                 self._add_conversation_id(username, conversation_id)
-            else: 
-                conversation_id = self.name_to_conversation_id[username]
-
+                self._save_name_to_conversation_id()
 
             message = Message(
-                conversation_id = conversation_id,              
-                author = username,
-                content = content,
-                sent_at = sent_at,
-                expiration = expiration
-            )  
+                conversation_id=conversation_id,
+                author=self.state.username,
+                content=content,
+                sent_at=sent_at,
+                expiration=expiration,
+            )
             self._append_and_save_messages([message])
         elif resp.status_code == 401:
             print(f"not authorised: please login")
