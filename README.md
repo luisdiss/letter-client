@@ -28,6 +28,7 @@ Commands
 - `messages <count>` — show the last N local messages with the selected contact
 - `add <username> <name>` — add a contact
 - `delete <username>` — remove a contact
+- `exit` - exit the application
 
 Using a different server
 ------------------------
