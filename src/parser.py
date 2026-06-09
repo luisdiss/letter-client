@@ -44,3 +44,5 @@ get_messages_parser = subparsers.add_parser('get')
 
 send_message_parser = subparsers.add_parser('send')
 send_message_parser.add_argument('msg_text', nargs='+')
+
+exit_parser = subparsers.add_parser('exit')

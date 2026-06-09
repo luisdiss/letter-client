@@ -45,6 +45,10 @@ class App:
         self.conversations = Conversations(self.state, user_dir)
         self.dispatch_table = self._create_dispatch_table()
 
+    def exit(self) -> None:
+        print("goodbye!\n")
+        sys.exit()
+
     def _login(self) -> None:
         while True:
             choice = input("login or register? ").strip().lower()
@@ -69,6 +73,8 @@ class App:
                         self.state.auth_token = token
                         self._setup_user_data()
                         return
+            elif choice == "exit":
+                self.exit()
             else:
                 print("type 'login' or 'register'\n")
 
@@ -146,6 +152,7 @@ class App:
             "get": self.conversations.sync_messages,
             "add": self.contacts.add_contact,
             "send": self.conversations.send_message,
+            "exit": self.exit,
         }
 
     def select(self, username: str) -> None:
