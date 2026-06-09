@@ -1,7 +1,7 @@
 Client — Letter CLI
-=====================
+====================
 
-Command-line client for the Letter server.
+Command-line messaging client. Connects to `https://lettermessaging.com` by default.
 
 Setup
 -----
@@ -10,17 +10,6 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 ```
-
-Before running, set your server URL in `src/settings.txt`:
-
-```json
-{
-    "server_url": "http://localhost:8000",
-    "expiration": null
-}
-```
-
-Use `http://localhost:8000` for a local server. If the server is running behind Caddy, use `https://yourdomain.com`.
 
 Run from the `src/` directory:
 
@@ -40,23 +29,13 @@ Commands
 - `add <username> <name>` — add a contact
 - `delete <username>` — remove a contact
 
-Local files
------------
-- `src/settings.txt` — server URL and expiration config
-- `src/data/<username>/contacts.txt` — contact list, scoped per account
-- `src/data/<username>/messages.txt` — message history (one JSON object per line)
-- `src/data/<username>/names.txt` — maps usernames to conversation IDs
+Using a different server
+------------------------
+Change `server_url` in `src/settings.txt` to point at your own server:
 
-Known limitations
------------------
-- Message history is stored in plain text on disk.
-- The server marks messages as read the moment they are fetched. If the client crashes before saving them to disk, those messages are permanently lost.
-
-Files
------
-- `client.py` — entry point
-- `app.py` — command loop, login, and registration
-- `conversations.py` — message sync and local persistence
-- `contacts.py` — contact management
-- `network.py` — shared HTTP timeout and connection error handling
-- `parser.py` — CLI argument parsing
+```json
+{
+    "server_url": "https://yourdomain.com",
+    "expiration": null
+}
+```
