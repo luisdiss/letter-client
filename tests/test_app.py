@@ -67,3 +67,12 @@ def test_register_request_invalid(app, mocker):
 def test_register_request_server_unreachable(app, mocker):
     mocker.patch('app.rq.post', return_value=SimpleNamespace(status_code=500))
     assert app._register_request('alice', 'password') is False
+
+
+def test_exit_command_in_parse_loop(app, mocker):
+    app.dispatch_table = {"exit": app.exit}
+    app.state.username = "alice"
+    app.state.selected_username = None
+    mocker.patch('builtins.input', return_value="exit")
+    with pytest.raises(SystemExit):
+        app._parse_loop()
